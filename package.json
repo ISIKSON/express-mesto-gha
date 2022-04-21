@@ -22,12 +22,12 @@
   "homepage": "https://github.com/ISIKSON/express-mesto-gha#readme",
   "devDependencies": {
     "eslint": "^8.10.0",
+    "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.25.4",
     "nodemon": "^2.0.15"
   },
   "dependencies": {
     "body-parser": "^1.20.0",
-    "eslint-config-airbnb-base": "^15.0.0",
     "express": "^4.17.3",
     "mongoose": "^6.3.0"
   }
