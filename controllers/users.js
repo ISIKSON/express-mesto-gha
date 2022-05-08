@@ -1,16 +1,29 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const AuthorizationError = require('../errors/AuthorizationError');
+// const ConflictError = require('../errors/ConflictError');
+// const ForbiddenError = require('../errors/ForbiddenError');
+const NotFoundError = require('../errors/NotFoundError');
+const ValidationError = require('../errors/ValidationError');
 
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.send(users))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .then((users) => {
+      if (users) {
+        res.send(users);
+      } else {
+        throw new AuthorizationError('Пользователи не найдены');
+      }
+    })
+    .catch(next);
 };
 
 const getUserId = (req, res) => {
   User.findById(req.params.userId)
     .then((userId) => {
       if (!userId) {
-        return res.status(404).send({ message: 'Пользователя с данным _id не существует' });
+        throw new NotFoundError('Пользователь с данным id не найден');
       }
       return res.send(userId);
     })
@@ -22,9 +35,16 @@ const getUserId = (req, res) => {
     });
 };
 
-const postUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+const createUser = (req, res) => {
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  bcrypt.hash(password, 10)
+    .then((hash) => {
+      User.create({
+        name, about, avatar, email, password: hash,
+      });
+    })
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -40,7 +60,7 @@ const updateProfile = (req, res) => {
     .then((user) => res.send({ _id: user._id, name, about }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Некорректные данные' });
+        throw new ValidationError('Переданы некорректные данные');
       }
       return res.status(500).send({ message: err.message });
     });
@@ -52,16 +72,37 @@ const updateAvatar = (req, res) => {
     .then((user) => res.send({ _id: user._id, avatar }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Некорректные данные' });
+        throw new ValidationError('Переданы некорректные данные');
       }
       return res.status(500).send({ message: err.message });
     });
 };
 
+const login = (req, res) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+
+      // вернём токен
+      res.send({ token });
+    })
+    .catch((err) => res.status(401).send({ message: err.message }));
+};
+
+const getMe = (req, res, next) => {
+  const { _id } = req.user;
+  User.find({ _id })
+    .then((user) => res.send(user))
+    .catch(next);
+};
+
 module.exports = {
   getUsers,
   getUserId,
-  postUser,
+  createUser,
   updateProfile,
   updateAvatar,
+  login,
+  getMe,
 };
