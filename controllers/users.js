@@ -46,7 +46,14 @@ const createUser = (req, res, next) => {
         name, about, avatar, email, password: hash,
       });
     })
-    .then((user) => res.status(200).send(user))
+    .then((user) => res.status(200).send({
+      user: {
+        email: user.email,
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+      },
+    }))
     .catch((err) => {
       if (err.code === 11000) {
         next(new ConflictError('Пользователь с таким EMAIL уже зарегистрирован'));
