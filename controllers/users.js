@@ -11,7 +11,7 @@ const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
       if (users) {
-        res.send(users);
+        res.status(200).send(users);
       } else {
         next(new AuthorizationError('Пользователи не найдены'));
       }
@@ -25,7 +25,7 @@ const getUserId = (req, res, next) => {
       if (!userId) {
         next(new NotFoundError('Пользователь с данным id не найден'));
       }
-      return res.send(userId);
+      return res.status(200).send(userId);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -46,7 +46,7 @@ const createUser = (req, res, next) => {
         name, about, avatar, email, password: hash,
       });
     })
-    .then((user) => res.send(user))
+    .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.code === 11000) {
         next(new ConflictError('Пользователь с таким EMAIL уже зарегистрирован'));
@@ -65,7 +65,7 @@ const updateProfile = (req, res, next) => {
       if (!user) {
         next(new NotFoundError('Пользователь с данным id не найден'));
       }
-      res.send({ _id: user._id, name, about });
+      res.status(200).send({ _id: user._id, name, about });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -83,7 +83,7 @@ const updateAvatar = (req, res, next) => {
       if (!user) {
         next(new NotFoundError('Пользователь с данным id не найден'));
       }
-      res.send({ _id: user._id, avatar });
+      res.status(200).send({ _id: user._id, avatar });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -101,7 +101,7 @@ const login = (req, res, next) => {
       const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
 
       // вернём токен
-      res.send({ token });
+      res.status(200).send({ token });
     })
     .catch(next);
 };
@@ -113,7 +113,7 @@ const getMe = (req, res, next) => {
       if (!user) {
         next(new NotFoundError('Пользователь с данным id не найден'));
       }
-      res.send(user);
+      return res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {

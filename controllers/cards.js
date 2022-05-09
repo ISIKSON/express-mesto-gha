@@ -5,7 +5,7 @@ const BadRequestError = require('../errors/BadRequestError');
 
 const getCards = (req, res) => {
   Card.find({})
-    .then((cards) => res.send(cards))
+    .then((cards) => res.status(200).send(cards))
     .catch(() => res.status(500).send({ message: 'Произошла ошибка при получении карточек' }));
 };
 
@@ -13,7 +13,7 @@ const createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
-    .then((card) => res.send(card))
+    .then((card) => res.status(200).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные карточки'));
@@ -31,7 +31,7 @@ const deleteCard = (req, res, next) => {
       } else if (card.owner._id.toString() !== req.user._id.toString()) {
         next(new ForbiddenError('Нельзя удалить чужую карточку'));
       }
-      res.send(card);
+      res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -48,7 +48,7 @@ const likeCard = (req, res, next) => {
       if (!card) {
         next(new NotFoundError('Передан несуществующий id карточки'));
       }
-      return res.send(card);
+      return res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -65,7 +65,7 @@ const dislikeCard = (req, res, next) => {
       if (!card) {
         next(new NotFoundError('Передан несуществующий id карточки'));
       }
-      return res.send(card);
+      return res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
