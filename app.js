@@ -2,19 +2,19 @@ const express = require('express');
 const mongoose = require('mongoose');
 const { celebrate, Joi, errors } = require('celebrate');
 const bodyParser = require('body-parser');
+const { login, createUser } = require('./controllers/users');
+const auth = require('./middlewares/auth');
 const errorHandler = require('./middlewares/error');
-// Слушаем 3000 порт
+
+const { PORT = 3000 } = process.env;
 
 const app = express();
-const auth = require('./middlewares/auth');
 
 app.use(bodyParser.json()); // для собирания JSON-формата
 app.use(bodyParser.urlencoded({ extended: true })); // для приёма веб-страниц внутри POST-запроса
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
 });
-
-const { login, createUser } = require('./controllers/users');
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -45,7 +45,6 @@ app.use('/cards', require('./routes/cards'));
 app.use(errors());
 app.use(errorHandler);
 
-const { PORT = 3000 } = process.env;
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
 });
