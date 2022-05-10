@@ -46,14 +46,16 @@ const createUser = (req, res, next) => {
         name, about, avatar, email, password: hash,
       });
     })
-    .then((user) => res.status(200).send({
-      user: {
-        email: user.email,
-        name: user.name,
-        about: user.about,
-        avatar: user.avatar,
-      },
-    }))
+    .then((user) => {
+      res.status(200).send({
+        user: {
+          email: user.email,
+          name: user.name,
+          about: user.about,
+          avatar: user.avatar,
+        },
+      });
+    })
     .catch((err) => {
       if (err.code === 11000) {
         next(new ConflictError('Пользователь с таким EMAIL уже зарегистрирован'));
@@ -114,8 +116,8 @@ const login = (req, res, next) => {
 };
 
 const getMe = (req, res, next) => {
-  const { _id } = req.user;
-  User.find({ _id })
+  // const { _id } = req.user;
+  User.findById(req.user._id)
     .then((user) => {
       if (!user) {
         next(new NotFoundError('Пользователь с данным id не найден'));
