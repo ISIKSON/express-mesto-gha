@@ -44,8 +44,7 @@ const createCard = (req, res, next) => {
 
 const deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
-    .orFail()
-    .catch(() => new NotFoundError('Карточка с указанным _id не найдена'))
+    .orFail(() => new NotFoundError('Карточка с указанным _id не найдена'))
     .then((card) => {
       if (card.owner._id.toString() !== req.user._id.toString()) {
         throw new ForbiddenError('Нельзя удалить чужую карточку');
