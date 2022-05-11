@@ -62,7 +62,7 @@ const createUser = (req, res, next) => {
       } else if (err.name === 'CastError') {
         next(new BadRequestError('Переданны некорректные данные'));
       } else {
-        next(console.log(err));
+        next(err);
       }
     });
 };
