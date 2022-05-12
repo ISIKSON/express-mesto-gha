@@ -9,13 +9,7 @@ const BadRequestError = require('../errors/BadRequestError');
 
 const getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => {
-      if (users) {
-        res.status(200).send(users);
-      } else {
-        next(new AuthorizationError('Пользователи не найдены'));
-      }
-    })
+    .then((users) => res.status(200).send(users))
     .catch(next);
 };
 
@@ -23,7 +17,7 @@ const getUserId = (req, res, next) => {
   User.findById(req.params.userId)
     .then((userId) => {
       if (!userId) {
-        next(new NotFoundError('Пользователь с данным id не найден'));
+        return next(new NotFoundError('Пользователь с данным id не найден'));
       }
       return res.status(200).send(userId);
     })
@@ -70,9 +64,9 @@ const updateProfile = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { name, about }, { runValidators: true })
     .then((user) => {
       if (!user) {
-        next(new NotFoundError('Пользователь с данным id не найден'));
+        return next(new NotFoundError('Пользователь с данным id не найден'));
       }
-      res.status(200).send({ _id: user._id, name, about });
+      return res.status(200).send({ _id: user._id, name, about });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -88,13 +82,13 @@ const updateAvatar = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { avatar }, { runValidators: true })
     .then((user) => {
       if (!user) {
-        next(new NotFoundError('Пользователь с данным id не найден'));
+        return next(new NotFoundError('Пользователь с данным id не найден'));
       }
-      res.status(200).send({ _id: user._id, avatar });
+      return res.status(200).send({ _id: user._id, avatar });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestError('Переданы некорректные данные');
+        next(new BadRequestError('Переданы некорректные данные'));
       } else {
         next(err);
       }
@@ -110,7 +104,9 @@ const login = (req, res, next) => {
       // вернём токен
       res.status(200).send({ token });
     })
-    .catch(next);
+    .catch((err) => {
+      next(new AuthorizationError(err.message));
+    });
 };
 
 const getMe = (req, res, next) => {
@@ -118,13 +114,13 @@ const getMe = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        next(new NotFoundError('Пользователь с данным id не найден'));
+        return next(new NotFoundError('Пользователь с данным id не найден'));
       }
       return res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new BadRequestError('Переданы некорректные данные');
+        next(new BadRequestError('Переданы некорректные данные'));
       } else {
         next(err);
       }

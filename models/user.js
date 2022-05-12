@@ -1,4 +1,3 @@
-const res = require('express/lib/response');
 const mongoose = require('mongoose');
 const isEmail = require('validator/lib/isEmail');
 const isURL = require('validator/lib/isURL');
@@ -61,10 +60,8 @@ userSchema.statics.findUserByCredentials = function (email, password) {
           }
 
           return user; // теперь user доступен
-        })
-        .catch((err) => res.status(401).send({ message: err.message }));
+        });
     });
-  // .catch((err) => res.status(401).send({ message: err.message }));
 };
 
 module.exports = mongoose.model('user', userSchema);
